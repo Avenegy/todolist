@@ -1,0 +1,21 @@
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: todolist-${{ matrix.os }}
+          path: |
+            target/release/todolist
+            target/release/todolist.exe
