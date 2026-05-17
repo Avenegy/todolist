@@ -7,7 +7,7 @@
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/Rust-learning%20project-orange?style=flat-square&logo=rust" />
-  <img src="https://img.shields.io/badge/status-in%20progress-yellow?style=flat-square" />
+  <img src="https://img.shields.io/badge/status-complete-green?style=flat-square" />
 </p>
 
 ---
@@ -50,11 +50,12 @@ The app starts in interactive mode just type commands and press Enter:
 
 ---
 
-## Roadmap
+## Roadmap | complete 17.05.2026
 
 - [x] Add tasks
 - [x] Mark tasks as done
 - [x] Remove tasks
 - [x] Edit task name
-- [ ] Save tasks to a file (persistence)
-- [ ] Load tasks on startup
+- [x] Save tasks to a file (persistence)
+- [x] Load tasks on startup
+

@@ -2,6 +2,9 @@ use std::io;
 use std::collections::HashMap;
 use std::cell::{Cell};
 use std::io::Write;
+use serde::{Serialize, Deserialize};
+use serde_json;
+use std::fs;
 
 fn main() {
     println!("
@@ -12,7 +15,7 @@ fn main() {
   \\_/ \\____/\\____/\\____/  \\____/\\_/\\____/ \\_/
     ");
     println!("Type 'help' for commands");
-    let mut active_task: HashMap<i64, Task>  = HashMap::new();
+    let mut active_task: HashMap<i64, Task>  = load_tasks();
     let id_manager = IDManager::new();
     
     loop {
@@ -36,9 +39,12 @@ fn main() {
             "exit" => break,
             _ => println!("Idk this command bro"),
         }
+        save_task(&mut active_task)
     }
 }
 
+
+#[derive(Serialize, Deserialize)]
 struct Task {
        name: String,
        done: bool,
@@ -110,5 +116,16 @@ fn list_task(tasks: &HashMap<i64, Task>){
         }
         println!("{id}. {name} {mark_done}");
     }
+}
 
+fn save_task(tasks: &HashMap<i64, Task>) {
+    let data = serde_json::to_string_pretty(tasks).unwrap();
+    fs::write("tasks.json", data).unwrap();
+}
+
+fn load_tasks() -> HashMap<i64, Task> {
+    match fs::read_to_string("tasks.json") {
+        Ok(data) => serde_json::from_str(&data).unwrap(), 
+        Err(_) => HashMap::new()
+    }
 }

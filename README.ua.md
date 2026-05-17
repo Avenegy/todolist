@@ -6,7 +6,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Rust-навчальний%20проєкт-orange?style=flat-square&logo=Rust" />
-  <img src="https://img.shields.io/badge/статус-в%20розробці-yellow?style=flat-square" />
+  <img src="https://img.shields.io/badge/статус-готово-green?style=flat-square" />
 </p>
 
 ---
@@ -50,13 +50,13 @@ cargo run
 
 ---
 
-## Плани
+## Плани | завершено 17.05.2026
 
 - [x] Додавання завдань
 - [x] Позначення як виконане
 - [x] Видалення завдань
 - [x] Редагування назви
-- [ ] Збереження у файл
-- [ ] Завантаження при запуску
+- [x] Збереження у файл
+- [x] Завантаження при запуску
 
 ---
