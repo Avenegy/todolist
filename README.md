@@ -52,7 +52,7 @@ The app starts in interactive mode just type commands and press Enter:
 
 ## Roadmap
 
-- [ ] Add tasks
+- [x] Add tasks
 - [ ] Mark tasks as done
 - [ ] Remove tasks
 - [ ] Edit task name
