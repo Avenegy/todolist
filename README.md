@@ -54,7 +54,7 @@ The app starts in interactive mode just type commands and press Enter:
 
 - [x] Add tasks
 - [x] Mark tasks as done
-- [ ] Remove tasks
-- [ ] Edit task name
+- [x] Remove tasks
+- [x] Edit task name
 - [ ] Save tasks to a file (persistence)
 - [ ] Load tasks on startup

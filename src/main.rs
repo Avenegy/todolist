@@ -1,33 +1,37 @@
 use std::io;
 use std::collections::HashMap;
+use std::cell::{Cell};
+use std::io::Write;
 
 fn main() {
-    println!("TODO LIST");
-    println!("Commands: add [Task Name], done [Task ID], remove [Task ID], edit [Task ID]");
-
-    // let commands = vec![
-    //     "add",
-    //     "done",
-    //     "remove",
-    //     "edit",
-    // ];
-
-    let mut active_task: HashMap<i32, Task>  = HashMap::new();
-
+    println!("
+ _____ ____  ____  ____    _     _  ____ _____ 
+/__ __Y  _ \\/  _ \\/  _ \\  / \\   / \\/ ___Y__ __\\
+  / \\ | / \\|| | \\|| / \\|  | |   | ||    \\ / \\  
+  | | | \\_/|| |_/|| \\_/|  | |_/\\| |\\___ | | |  
+  \\_/ \\____/\\____/\\____/  \\____/\\_/\\____/ \\_/
+    ");
+    println!("Type 'help' for commands");
+    let mut active_task: HashMap<i64, Task>  = HashMap::new();
+    let id_manager = IDManager::new();
+    
     loop {
-        let mut promt: String = String::from("");
+        print!("> ");
+        io::stdout().flush().unwrap();
+        let mut promt: String = String::from("").to_lowercase();
         let _ = io::stdin().read_line(&mut promt);
         
 
         let parts: Vec<&str> = promt.split_whitespace().collect();
+        if parts.is_empty() { continue; }
         let rest = &parts[1..];
         let name = rest.join(" ");
-
         match parts[0] {
-            "add" => add_task(&mut active_task, name),
-            "done" => done_task(parts[1], &mut active_task),
-            "remove" => remove_task(),
-            "edit" => edit_task(),
+            "add" => add_task(&mut active_task, name, &id_manager),
+            "done" => done_task(parts[1].trim().parse::<i64>().unwrap(), &mut active_task),
+            "remove" => remove_task(parts[1].trim().parse::<i64>().unwrap(), &mut active_task),
+            "edit" => edit_task(parts[1].trim().parse::<i64>().unwrap(), &mut active_task, parts[2..].join(" ")),
+            "help" => println!("Commands:\n Add new task - add [Task Name]\n Complete active task - done [Task ID]\n Remove active task - remove [Task ID]\n Edit active task - edit [Task ID] [New Name]"),
             "list" => list_task(&mut active_task),
             "exit" => break,
             _ => println!("Idk this command bro"),
@@ -40,31 +44,64 @@ struct Task {
        done: bool,
     }
 
-fn add_task(tasks: &mut HashMap<i32, Task>, name: String) {
-    let id_unsize = &tasks.len() + 1;
-    let id = id_unsize as i32;
-    tasks.insert(id, Task{name: name, done: false});
+
+pub struct IDManager {
+  next_id: Cell<i64>
 }
 
-fn done_task(id: &str, tasks: &mut HashMap<i32, Task>) {
+impl IDManager {
+  pub fn new() -> IDManager {
+    IDManager { next_id: Cell::new(1) }
+  }
 
-    let t_id: i32 = id.trim().parse::<i32>().unwrap();
-    match tasks.get_mut(&t_id) {
-        Some(task) => task.done = true, 
+  pub fn get_id(&self) -> i64 {
+    let ans = self.next_id.get(); 
+    self.next_id.set(ans + 1); 
+    ans
+  }
+}
+
+fn add_task(tasks: &mut HashMap<i64, Task>, name: String, next_id: &IDManager) {
+
+    let id = next_id.get_id();
+
+    tasks.insert(id, Task{name: name, done: false});
+    println!("New task added!")
+}
+
+fn done_task(id: i64, tasks: &mut HashMap<i64, Task>) {
+    match tasks.get_mut(&id) {
+        Some(task) => {
+            task.done = true;
+            println!("Task done!")
+        }, 
         None => println!("incorrect id!")
     }
 }
 
-fn remove_task(){
+fn remove_task(id: i64, tasks: &mut HashMap<i64, Task>){
+    let removed_v = tasks.remove(&id);
+    match removed_v {
+        Some(task) => println!("Removed: {}", task.name),
+        None => println!("Id not found")
+    }
 
 }
 
-fn edit_task(){
-
+fn edit_task(id: i64, tasks: &mut HashMap<i64, Task>, new_name: String){
+        match tasks.get_mut(&id) {
+            Some(task) => {
+                task.name = new_name;
+                println!("Name updated!")
+            },
+            None => println!("incorrect id!")
+    }
 }
 
 
-fn list_task(tasks: &HashMap<i32, Task>){
+fn list_task(tasks: &HashMap<i64, Task>){
+
+    println!("TASK LIST:");
     for (id, val) in tasks {
         let mut mark_done = String::from("[ ]");
         let name = &val.name;
