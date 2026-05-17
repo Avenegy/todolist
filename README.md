@@ -53,7 +53,7 @@ The app starts in interactive mode just type commands and press Enter:
 ## Roadmap
 
 - [x] Add tasks
-- [ ] Mark tasks as done
+- [x] Mark tasks as done
 - [ ] Remove tasks
 - [ ] Edit task name
 - [ ] Save tasks to a file (persistence)

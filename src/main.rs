@@ -25,7 +25,7 @@ fn main() {
 
         match parts[0] {
             "add" => add_task(&mut active_task, name),
-            "done" => done_task(),
+            "done" => done_task(parts[1], &mut active_task),
             "remove" => remove_task(),
             "edit" => edit_task(),
             "list" => list_task(&mut active_task),
@@ -46,8 +46,13 @@ fn add_task(tasks: &mut HashMap<i32, Task>, name: String) {
     tasks.insert(id, Task{name: name, done: false});
 }
 
-fn done_task(){
+fn done_task(id: &str, tasks: &mut HashMap<i32, Task>) {
 
+    let t_id: i32 = id.trim().parse::<i32>().unwrap();
+    match tasks.get_mut(&t_id) {
+        Some(task) => task.done = true, 
+        None => println!("incorrect id!")
+    }
 }
 
 fn remove_task(){
