@@ -16,14 +16,15 @@ fn main() {
     ");
     println!("Type 'help' for commands");
     let mut active_task: HashMap<i64, Task>  = load_tasks();
-    let id_manager = IDManager::new();
+    let start_id = active_task.keys().max().copied().unwrap_or(0) + 1;
+    let id_manager = IDManager::new(start_id);
     
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
-        let mut promt: String = String::from("").to_lowercase();
+        let mut promt: String = String::from("");
         let _ = io::stdin().read_line(&mut promt);
-        
+        let promt = promt.to_lowercase();
 
         let parts: Vec<&str> = promt.split_whitespace().collect();
         if parts.is_empty() { continue; }
@@ -31,9 +32,27 @@ fn main() {
         let name = rest.join(" ");
         match parts[0] {
             "add" => add_task(&mut active_task, name, &id_manager),
-            "done" => done_task(parts[1].trim().parse::<i64>().unwrap(), &mut active_task),
-            "remove" => remove_task(parts[1].trim().parse::<i64>().unwrap(), &mut active_task),
-            "edit" => edit_task(parts[1].trim().parse::<i64>().unwrap(), &mut active_task, parts[2..].join(" ")),
+            "done" => done_task(match parts[1].trim().parse::<i64>(){
+                Ok(id) => id,
+                Err(_) => {
+                    println!("Invalid ID!");
+                    continue;
+                }
+            }, &mut active_task),
+            "remove" => remove_task(match parts[1].trim().parse::<i64>(){
+                Ok(id) => id,
+                Err(_) => {
+                    println!("Invalid ID!");
+                    continue;
+                }
+            }, &mut active_task),
+            "edit" => edit_task(match parts[1].trim().parse::<i64>(){
+                Ok(id) => id,
+                Err(_) => {
+                    println!("Invalid ID!");
+                    continue;
+                }
+            }, &mut active_task, parts[2..].join(" ")),
             "help" => println!("Commands:\n Add new task - add [Task Name]\n Complete active task - done [Task ID]\n Remove active task - remove [Task ID]\n Edit active task - edit [Task ID] [New Name]"),
             "list" => list_task(&mut active_task),
             "exit" => break,
@@ -42,6 +61,7 @@ fn main() {
         save_task(&mut active_task)
     }
 }
+
 
 
 #[derive(Serialize, Deserialize)]
@@ -56,8 +76,8 @@ pub struct IDManager {
 }
 
 impl IDManager {
-  pub fn new() -> IDManager {
-    IDManager { next_id: Cell::new(1) }
+  pub fn new(start: i64) -> IDManager {
+    IDManager { next_id: Cell::new(start) }
   }
 
   pub fn get_id(&self) -> i64 {
@@ -89,7 +109,7 @@ fn remove_task(id: i64, tasks: &mut HashMap<i64, Task>){
     let removed_v = tasks.remove(&id);
     match removed_v {
         Some(task) => println!("Removed: {}", task.name),
-        None => println!("Id not found")
+        None => println!("ID not found!")
     }
 
 }
@@ -100,7 +120,7 @@ fn edit_task(id: i64, tasks: &mut HashMap<i64, Task>, new_name: String){
                 task.name = new_name;
                 println!("Name updated!")
             },
-            None => println!("incorrect id!")
+            None => println!("incorrect ID!")
     }
 }
 
@@ -120,12 +140,17 @@ fn list_task(tasks: &HashMap<i64, Task>){
 
 fn save_task(tasks: &HashMap<i64, Task>) {
     let data = serde_json::to_string_pretty(tasks).unwrap();
-    fs::write("tasks.json", data).unwrap();
+    fs::write("tasks.json", data).unwrap_or_else(|_| {
+        println!("The file could not be saved!")
+    });
 }
 
 fn load_tasks() -> HashMap<i64, Task> {
     match fs::read_to_string("tasks.json") {
-        Ok(data) => serde_json::from_str(&data).unwrap(), 
-        Err(_) => HashMap::new()
+        Ok(data) => serde_json::from_str(&data).unwrap_or_else(|_| HashMap::new()),
+        Err(_) => {
+            println!("Unable to upload the file! A new one has been created");
+            HashMap::new()
+        }
     }
 }
