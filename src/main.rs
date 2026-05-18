@@ -1,10 +1,13 @@
 use std::io;
 use std::collections::HashMap;
-use std::cell::{Cell};
 use std::io::Write;
-use serde::{Serialize, Deserialize};
-use serde_json;
-use std::fs;
+
+mod models;
+use models::{Task, IDManager};
+mod tasks;
+use tasks::{add_task, remove_task, edit_task, list_task, done_task};
+mod storage;
+use storage::{load_tasks, save_task};
 
 fn main() {
     println!("
@@ -59,98 +62,5 @@ fn main() {
             _ => println!("Idk this command bro"),
         }
         save_task(&mut active_task)
-    }
-}
-
-
-
-#[derive(Serialize, Deserialize)]
-struct Task {
-       name: String,
-       done: bool,
-    }
-
-
-pub struct IDManager {
-  next_id: Cell<i64>
-}
-
-impl IDManager {
-  pub fn new(start: i64) -> IDManager {
-    IDManager { next_id: Cell::new(start) }
-  }
-
-  pub fn get_id(&self) -> i64 {
-    let ans = self.next_id.get(); 
-    self.next_id.set(ans + 1); 
-    ans
-  }
-}
-
-fn add_task(tasks: &mut HashMap<i64, Task>, name: String, next_id: &IDManager) {
-
-    let id = next_id.get_id();
-
-    tasks.insert(id, Task{name: name, done: false});
-    println!("New task added!")
-}
-
-fn done_task(id: i64, tasks: &mut HashMap<i64, Task>) {
-    match tasks.get_mut(&id) {
-        Some(task) => {
-            task.done = true;
-            println!("Task done!")
-        }, 
-        None => println!("incorrect id!")
-    }
-}
-
-fn remove_task(id: i64, tasks: &mut HashMap<i64, Task>){
-    let removed_v = tasks.remove(&id);
-    match removed_v {
-        Some(task) => println!("Removed: {}", task.name),
-        None => println!("ID not found!")
-    }
-
-}
-
-fn edit_task(id: i64, tasks: &mut HashMap<i64, Task>, new_name: String){
-        match tasks.get_mut(&id) {
-            Some(task) => {
-                task.name = new_name;
-                println!("Name updated!")
-            },
-            None => println!("incorrect ID!")
-    }
-}
-
-
-fn list_task(tasks: &HashMap<i64, Task>){
-
-    println!("TASK LIST:");
-    for (id, val) in tasks {
-        let mut mark_done = String::from("[ ]");
-        let name = &val.name;
-        if val.done{
-           mark_done = String::from("[x]");
-        }
-        println!("{id}. {name} {mark_done}");
-    }
-}
-
-fn save_task(tasks: &HashMap<i64, Task>) {
-    let data = serde_json::to_string_pretty(tasks).unwrap();
-    fs::write("tasks.json", data).unwrap_or_else(|_| {
-        println!("The file could not be saved!")
-    });
-}
-
-fn load_tasks() -> HashMap<i64, Task> {
-    match fs::read_to_string("tasks.json") {
-        Ok(data) => serde_json::from_str(&data).unwrap_or_else(|_| HashMap::new()),
-        Err(_) => {
-            println!("Unable to upload the file! A new one has been created");
-            HashMap::new()
-        }
     }
 }
